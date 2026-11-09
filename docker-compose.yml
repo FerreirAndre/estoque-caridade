@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: caridade-postgres
+    environment:
+      POSTGRES_USER: caridade
+      POSTGRES_PASSWORD: caridade123
+      POSTGRES_DB: caridadedb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U caridade -d caridadedb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
