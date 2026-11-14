@@ -1,0 +1,141 @@
+<section>
+  <div class="dashboard-header">
+    <div>
+      <h2>Dashboard</h2>
+      <p>Acompanhe a situação atual da despensa.</p>
+    </div>
+
+    <button
+      class="secondary"
+      (click)="carregarDashboard()"
+      [disabled]="carregando()">
+      Atualizar
+    </button>
+  </div>
+
+  @if (erro()) {
+    <article class="error-message">
+      {{ erro() }}
+    </article>
+  }
+
+  @if (carregando()) {
+    <p aria-busy="true">Carregando informações...</p>
+  } @else {
+    <div class="stats-grid">
+      <article class="stat-card">
+        <span>Itens cadastrados</span>
+        <strong>{{ totalItens() }}</strong>
+      </article>
+
+      <article class="stat-card">
+        <span>Itens sem estoque</span>
+        <strong>{{ itensSemEstoque().length }}</strong>
+      </article>
+
+      <article class="stat-card">
+        <span>Operações de entrada no mês</span>
+        <strong>{{ totalEntradasMes() }}</strong>
+      </article>
+
+      <article class="stat-card">
+        <span>Operações de saída no mês</span>
+        <strong>{{ totalSaidasMes() }}</strong>
+      </article>
+    </div>
+
+    <div class="dashboard-grid">
+      <article>
+        <div class="section-header">
+          <h3>Estoque baixo</h3>
+          <span>{{ itensEstoqueBaixo().length }} itens</span>
+        </div>
+
+        @if (itensEstoqueBaixo().length === 0) {
+          <p>Nenhum item com estoque baixo.</p>
+        } @else {
+          <div class="item-list">
+            @for (item of itensEstoqueBaixo(); track item.id) {
+              <div class="item-row">
+                <div>
+                  <strong>{{ item.nome }}</strong>
+                  <small>
+                    Mínimo: {{ item.estoque_minimo }} {{ item.unidade_medida }}
+                  </small>
+                </div>
+
+                <strong class="low-stock">
+                  {{ item.quantidade }} {{ item.unidade_medida }}
+                </strong>
+              </div>
+            }
+          </div>
+        }
+      </article>
+
+      <article>
+        <div class="section-header">
+          <h3>Itens sem estoque</h3>
+          <span>{{ itensSemEstoque().length }} itens</span>
+        </div>
+
+        @if (itensSemEstoque().length === 0) {
+          <p>Todos os itens possuem estoque.</p>
+        } @else {
+          <div class="item-list">
+            @for (item of itensSemEstoque(); track item.id) {
+              <div class="item-row">
+                <span>{{ item.nome }}</span>
+                <strong class="empty-stock">Sem estoque</strong>
+              </div>
+            }
+          </div>
+        }
+      </article>
+    </div>
+
+    <article>
+      <div class="section-header">
+        <div>
+          <h3>Movimentações recentes</h3>
+          <p>As últimas cinco operações registradas.</p>
+        </div>
+      </div>
+
+      @if (movimentacoesRecentes().length === 0) {
+        <p>Nenhuma movimentação registrada.</p>
+      } @else {
+        <figure>
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Item</th>
+                <th>Tipo</th>
+                <th>Quantidade</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (mov of movimentacoesRecentes(); track mov.id) {
+                <tr>
+                  <td>{{ mov.data | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td>{{ mov.nomeItem }}</td>
+                  <td>
+                    <span
+                      class="movement-badge"
+                      [class.entry]="mov.natureza === 'ENTRADA'"
+                      [class.exit]="mov.natureza === 'SAIDA'">
+                      {{ mov.natureza === 'ENTRADA' ? 'Entrada' : 'Saída' }}
+                    </span>
+                  </td>
+                  <td>{{ mov.quantidade }} {{ mov.unidadeMedida }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </figure>
+      }
+    </article>
+  }
+</section>

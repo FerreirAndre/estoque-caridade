@@ -1,0 +1,159 @@
+<section>
+  <div class="page-header">
+    <div>
+      <h2>Movimentações</h2>
+      <p>Registre entradas e saídas de alimentos do estoque.</p>
+    </div>
+
+    <button class="secondary" (click)="carregarDados()" [disabled]="carregando()">Atualizar</button>
+  </div>
+
+  @if (mensagemSucesso()) {
+    <article class="success-message">
+      {{ mensagemSucesso() }}
+    </article>
+  }
+
+  @if (erro()) {
+    <article class="error-message">
+      {{ erro() }}
+    </article>
+  }
+
+  <article>
+    <h3>Registrar movimentação</h3>
+
+    @if (itens().length === 0 && !carregando()) {
+      <p>Nenhum item cadastrado. Cadastre um item antes de registrar uma movimentação.</p>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="registrarMovimentacao()">
+        <label for="item">Item</label>
+        <select id="item" formControlName="item_id" (change)="atualizarItemSelecionado($event)">
+          <option [ngValue]="0" disabled>Selecione um item</option>
+
+          @for (item of itens(); track item.id) {
+            <option [ngValue]="item.id">
+              {{ item.nome }}
+            </option>
+          }
+        </select>
+        @if (itemSelecionado(); as item) {
+          <div class="stock-info">
+            <span>Estoque atual</span>
+
+            <strong> {{ item.quantidade }} {{ item.unidade_medida }} </strong>
+          </div>
+        }
+        @if (form.controls.item_id.touched && form.controls.item_id.invalid) {
+          <small class="error-text">Selecione um item.</small>
+        }
+
+        <label for="natureza">Tipo de movimentação</label>
+        <select id="natureza" formControlName="natureza">
+          <option value="ENTRADA">Entrada</option>
+          <option value="SAIDA">Saída</option>
+        </select>
+
+        <label for="quantidade">
+          Quantidade
+          @if (itemSelecionado(); as item) {
+            ({{ item.unidade_medida }})
+          }
+        </label>
+
+        <input
+          id="quantidade"
+          type="number"
+          min="1"
+          step="1"
+          formControlName="quantidade"
+          placeholder="Informe a quantidade"
+        />
+        @if (form.controls.quantidade.touched && form.controls.quantidade.invalid) {
+          <small class="error-text"> Informe uma quantidade maior que zero. </small>
+        }
+
+        <button type="submit" [disabled]="salvando()">
+          {{ salvando() ? 'Registrando...' : 'Registrar movimentação' }}
+        </button>
+      </form>
+    }
+  </article>
+
+  <article>
+    <div class="table-header">
+      <div>
+        <h3>Histórico</h3>
+        <p>Consulte as movimentações registradas.</p>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div>
+        <label for="filtro-item">Filtrar por item</label>
+        <select
+          id="filtro-item"
+          [value]="filtroItem()"
+          (change)="filtroItem.set($any($event.target).value)"
+        >
+          <option value="TODOS">Todos os itens</option>
+
+          @for (item of itens(); track item.id) {
+            <option [value]="item.id">{{ item.nome }}</option>
+          }
+        </select>
+      </div>
+
+      <div>
+        <label for="filtro-natureza">Tipo</label>
+        <select
+          id="filtro-natureza"
+          [value]="filtroNatureza()"
+          (change)="filtroNatureza.set($any($event.target).value)"
+        >
+          <option value="TODOS">Todas</option>
+          <option value="ENTRADA">Entradas</option>
+          <option value="SAIDA">Saídas</option>
+        </select>
+      </div>
+    </div>
+
+    @if (carregando()) {
+      <p aria-busy="true">Carregando histórico...</p>
+    } @else if (historicoFiltrado().length === 0) {
+      <p>Nenhuma movimentação encontrada.</p>
+    } @else {
+      <figure>
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Item</th>
+              <th>Tipo</th>
+              <th>Quantidade</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (mov of historicoFiltrado(); track mov.id) {
+              <tr>
+                <td>{{ mov.data | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ mov.nomeItem }}</td>
+                <td>
+                  <span
+                    class="movement-badge"
+                    [class.entry]="mov.natureza === 'ENTRADA'"
+                    [class.exit]="mov.natureza === 'SAIDA'"
+                  >
+                    {{ mov.natureza === 'ENTRADA' ? 'Entrada' : 'Saída' }}
+                  </span>
+                </td>
+                <td>{{ mov.quantidade }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </figure>
+    }
+  </article>
+</section>

@@ -1,0 +1,138 @@
+<section>
+  <div class="estoque-header">
+    <div>
+      <h2>Estoque</h2>
+      <p>Consulte os alimentos disponíveis na despensa.</p>
+    </div>
+  </div>
+
+  <div class="estoque-actions">
+    <button class="secondary" (click)="carregarItens()">
+      Atualizar
+    </button>
+
+    <button (click)="abrirFormulario()">
+      Novo item
+    </button>
+  </div>
+
+  @if (mensagemSucesso()) {
+    <article class="success-message">
+      {{ mensagemSucesso() }}
+    </article>
+  }
+
+  @if (erro()) {
+    <article class="error-message">
+      {{ erro() }}
+    </article>
+  }
+
+  @if (mostrarFormulario()) {
+    <article>
+      <h3>
+        {{ itemEditando() !== null ? 'Editar item' : 'Novo item' }}
+      </h3>
+
+      <form [formGroup]="form" (ngSubmit)="salvarItem()">
+        <label for="nome">Nome do item</label>
+        <input
+          id="nome"
+          type="text"
+          formControlName="nome"
+          placeholder="Ex.: Arroz, Feijão, Açúcar"
+        />
+
+        @if (form.controls.nome.touched && form.controls.nome.hasError('required')) {
+          <small class="error-text">O nome é obrigatório.</small>
+        }
+
+        @if (form.controls.nome.touched && form.controls.nome.hasError('maxlength')) {
+          <small class="error-text"> O nome deve ter no máximo 150 caracteres. </small>
+        }
+
+        <label for="unidade">Unidade de medida</label>
+        <select id="unidade" formControlName="unidade_medida">
+          <option value="KG">Quilograma (KG)</option>
+          <option value="PACOTE">Pacote</option>
+          <option value="LITRO">Litro</option>
+        </select>
+        <label for="estoque_minimo">Estoque mínimo</label>
+        <input id="estoque_minimo" type="number" min="0" step="1" formControlName="estoque_minimo" placeholder="Ex.: 10" />
+
+        @if (form.controls.estoque_minimo.touched && form.controls.estoque_minimo.hasError('min')) {
+        <small class="error-text">
+          O estoque mínimo não pode ser negativo.
+        </small>
+        }
+        <div class="form-actions">
+          <button type="button" class="secondary" (click)="cancelarCadastro()">Cancelar</button>
+
+          <button type="submit" [disabled]="salvando()">
+            {{
+              salvando()
+                ? 'Salvando...'
+                : itemEditando() !== null
+                  ? 'Salvar alterações'
+                  : 'Cadastrar item'
+            }}
+          </button>
+        </div>
+      </form>
+    </article>
+  }
+  @if (carregando()) {
+    <p aria-busy="true">Carregando itens...</p>
+  }
+
+  @if (!carregando()) {
+    <article>
+      <div class="table-header">
+        <h3>Itens cadastrados</h3>
+        <span>{{ itens().length }} itens</span>
+      </div>
+
+      @if (itens().length === 0) {
+        <p>Nenhum item cadastrado ainda.</p>
+      } @else {
+        <figure>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Quantidade</th>
+                <th>Unidade</th>
+                <th>Estoque minimo</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              @for (item of itens(); track item.id) {
+                <tr>
+                  <td>{{ item.nome }}</td>
+                  <td>{{ item.quantidade }}</td>
+                  <td>{{ item.unidade_medida }}</td>
+                  <td>{{item.estoque_minimo}}</td>
+                  <td>
+                    <div class="table-actions">
+                      <button class="secondary outline" (click)="abrirEdicao(item)">Editar</button>
+
+                      <button
+                        class="contrast outline"
+                        (click)="excluirItem(item)"
+                        [disabled]="excluindo() === item.id"
+                      >
+                        {{ excluindo() === item.id ? 'Excluindo...' : 'Excluir' }}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </figure>
+      }
+    </article>
+  }
+</section>

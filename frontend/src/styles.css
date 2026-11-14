@@ -1,0 +1,14 @@
+@import "@picocss/pico/css/pico.min.css";
+
+:root {
+  color-scheme: light;
+  --pico-font-size: 15px;
+  --pico-border-radius: 8px;
+  --pico-primary: #246b57;
+  --pico-primary-hover: #1b5343;
+}
+
+body {
+  margin: 0;
+  background: #f5f7f6;
+}
